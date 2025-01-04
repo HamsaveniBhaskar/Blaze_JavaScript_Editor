@@ -85,7 +85,7 @@ setInterval(() => {
     http.get(`http://localhost:${port}/health`, (res) => {
         console.log("Health check pinged!");
     });
-}, 2 * 60 * 1000); // Ping every 5 minutes
+}, 5 * 60 * 1000); // Ping every 5 minutes
 
 
 // Start the server
