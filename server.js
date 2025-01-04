@@ -74,10 +74,10 @@ app.post("/", (req, res) => {
     });
 });
 
-// Health check endpoint
 app.get("/health", (req, res) => {
     res.json({ status: "Server is running" });
 });
+
 
 // Start the server
 app.listen(port, () => {
