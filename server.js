@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const { Worker } = require("worker_threads");
 const cors = require("cors");
 const crypto = require("crypto");
+const http = require("http"); // Add this line to import the http module
 
 const app = express();
 const port = 3000;
@@ -13,7 +14,7 @@ app.use(cors());
 // Middleware for JSON parsing
 app.use(bodyParser.json());
 
-// In-memory cache for execution results
+// In-memory cache to store compiled results
 const cache = new Map();
 const CACHE_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
 const MAX_CACHE_SIZE = 100;
@@ -28,7 +29,7 @@ setInterval(() => {
     }
 }, 60000); // Run every minute
 
-// POST endpoint for code execution
+// POST endpoint for code compilation and execution
 app.post("/", (req, res) => {
     const { code, input } = req.body;
 
@@ -38,14 +39,14 @@ app.post("/", (req, res) => {
     }
 
     // Generate a unique hash for the code
-    const codeHash = crypto.createHash("md5").update(code + input).digest("hex");
+    const codeHash = crypto.createHash("md5").update(code).digest("hex");
 
     // Check if result is cached
     if (cache.has(codeHash)) {
         return res.json({ output: cache.get(codeHash).result });
     }
 
-    // Create a worker thread for execution
+    // Create a worker thread for compilation
     const worker = new Worker("./compiler-worker.js", {
         workerData: { code, input },
     });
@@ -76,9 +77,8 @@ app.post("/", (req, res) => {
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-    res.status(200).json({ status: "Server is healthy!" });
+    res.json({ status: "Server is running" });
 });
-
 
 // Self-pinging mechanism to keep the server alive
 setInterval(() => {
@@ -86,7 +86,6 @@ setInterval(() => {
         console.log("Health check pinged!");
     });
 }, 5 * 60 * 1000); // Ping every 5 minutes
-
 
 // Start the server
 app.listen(port, () => {
